@@ -8,6 +8,10 @@
  *
  */
 
+
+// TODO: add trial data to out_data
+// TODO: make sure trial data includes grid
+
 jsPsych.plugins['clk-pick-best'] = (function() {
 
   var plugin = {};
@@ -31,12 +35,6 @@ jsPsych.plugins['clk-pick-best'] = (function() {
         array: true,
         default: [100,100],
         description: 'Array specifying the width and height of the images to show.'
-      },
-      trial_duration: {
-        type: jsPsych.plugins.parameterType.INT,
-        pretty_name: 'Trial duration',
-        default: 2000,
-        description: 'How long to show the stimulus for in milliseconds.'
       }
     }
   }
@@ -66,7 +64,7 @@ jsPsych.plugins['clk-pick-best'] = (function() {
 
     function track_mouse_down(display_element){ // adapted from jspsych-serial-reaction-time-mouse
       var response_grid = display_element.querySelectorAll("#jspsych-vsl-grid-scene-table-cell")
-      console.log(response_grid)
+      // console.log(response_grid)
       for (var i=0; i<response_grid.length; i++){
         response_grid[i].addEventListener("mousedown", function(e){
           var resp_data = {}
@@ -81,8 +79,9 @@ jsPsych.plugins['clk-pick-best'] = (function() {
     function after_response(resp_data){
       // response = response.rt == null ? info: resp_data
       response = resp_data //TODO: idk what to do here
-      console.log(resp_data)
+      console.log(response)
       end_trial()
+      // jsPsych.finishTrial(response)
     }
 
     track_mouse_down(display_element)
@@ -122,9 +121,6 @@ jsPsych.plugins['clk-pick-best'] = (function() {
     return html;
 
   };
-
-
-
 
   return plugin;
 })();
