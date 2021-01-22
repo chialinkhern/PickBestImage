@@ -8,10 +8,6 @@
  *
  */
 
-
-// TODO: add trial data to out_data
-// TODO: make sure trial data includes grid
-
 jsPsych.plugins['clk-pick-best'] = (function() {
 
   var plugin = {};
@@ -35,32 +31,18 @@ jsPsych.plugins['clk-pick-best'] = (function() {
         array: true,
         default: [100,100],
         description: 'Array specifying the width and height of the images to show.'
+      },
+      prompt: {
+        type: jsPsych.plugins.parameterType.STRING,
+        pretty_name: "Prompt",
+        array: true,
+        default: null,
+        description: "The prompt that accompanies the image grid."
       }
     }
   }
 
   plugin.trial = function(display_element, trial) {
-
-    display_element.innerHTML = plugin.generate_stimulus(trial.stimuli, trial.image_size);
-    startTime = Date.now()
-
-    function end_trial(){
-      // kill any remaining setTimeout handlers
-      jsPsych.pluginAPI.clearAllTimeouts();
-
-      var trial_data = {
-        "rt": response.rt,
-        // "grid": JSON.stringify(trial.stimuli),
-        "response_row": response.row,
-        "response_column": response.columns,
-      }
-
-      // clear the display
-      display_element.innerHTML = "";
-
-      // move on to next trial
-      jsPsych.finishTrial(trial_data)
-    }
 
     function track_mouse_down(display_element){ // adapted from jspsych-serial-reaction-time-mouse
       var response_grid = display_element.querySelectorAll("#jspsych-vsl-grid-scene-table-cell")
@@ -70,20 +52,41 @@ jsPsych.plugins['clk-pick-best'] = (function() {
           var resp_data = {}
           resp_data.row = e.currentTarget.getAttribute("data-row")
           resp_data.column = e.currentTarget.getAttribute("data-column")
-          resp_data.rt = Date.now() - startTime //TODO: you need to define startTime
+          resp_data.rt = Date.now() - startTime
           after_response(resp_data)
         })
       }
     }
 
     function after_response(resp_data){
-      // response = response.rt == null ? info: resp_data
       response = resp_data //TODO: idk what to do here
-      console.log(response)
       end_trial()
-      // jsPsych.finishTrial(response)
     }
 
+    function end_trial(){
+      // kill any remaining setTimeout handlers
+      jsPsych.pluginAPI.clearAllTimeouts();
+
+      var trial_data = {
+        "rt": response.rt,
+        "image_picked": trial.stimuli[response.row][response.column],
+      }
+
+      // clear the display
+      display_element.innerHTML = "";
+
+      // move on to next trial
+      jsPsych.finishTrial(trial_data)
+    }
+
+    if (trial.prompt !== null){
+      display_element.innerHTML = "\n"+trial.prompt
+      display_element.innerHTML += plugin.generate_stimulus(trial.stimuli, trial.image_size);
+      }
+    else {display_element.innerHTML = plugin.generate_stimulus(trial.stimuli, trial.image_size);
+}
+
+    startTime = Date.now()
     track_mouse_down(display_element)
   };
 
@@ -103,7 +106,7 @@ jsPsych.plugins['clk-pick-best'] = (function() {
 
       for (var col = 0; col < ncols; col++) {
         html += '<td id="jspsych-vsl-grid-scene-table-' + row + '-' + col +'" '+
-          'style="padding: '+ (image_size[1] / 10) + 'px ' + (image_size[0] / 10) + 'px; border: 1px solid #555;">'+
+          'style="padding: '+ (image_size[1] / 10) + 'px ' + (image_size[0] / 10) + 'px;">'+
           '<div id="jspsych-vsl-grid-scene-table-cell"' + ' data-row=' + row + ' data-column=' + col + ' style="width: '+image_size[0]+'px; height: '+image_size[1]+'px;">';
         if (pattern[row][col] !== 0) {
           html += '<img '+
@@ -117,6 +120,8 @@ jsPsych.plugins['clk-pick-best'] = (function() {
 
     html += '</table>';
     html += '</div>';
+
+    html += '</div>'+''
 
     return html;
 

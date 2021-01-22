@@ -30,24 +30,28 @@
 	let images = <?php echo json_encode($images, JSON_HEX_TAG); ?>;
 	obj_names = shuffle(obj_names)
     let sub_num = Date.now()
-//     let out_data = {obj_names: [], selected_imgs: [], : rts:[]}
-
+    let out_data = {obj_names: [], images_picked: [], rts:[]}
 
     var pickbest = {
         type: 'clk-pick-best',
+        obj_name: "",
         stimuli: [[0],[0]],
-        image_size: [350,350],
+        prompt: null,
+        image_size: [375,375],
         on_start: function(){
-            let obj_name = obj_names[iterate_objs.obj_num]
-            let obj_images = images[obj_name]
-            console.log(obj_images)
+            this.obj_name = obj_names[iterate_objs.obj_num]
+            this.prompt = "Click on the best "+"<b>"+this.obj_name+"</b>!"
+            let obj_images = images[this.obj_name]
             for (i in obj_images){
-                obj_images[i] = "images/"+obj_name+"/"+obj_images[i]
+                obj_images[i] = "images/"+this.obj_name+"/"+obj_images[i]
             }
             this.stimuli = listToMatrix(obj_images, 2)
+            console.log(this.stimuli)
         },
-        on_finish: function(){
-
+        on_finish: function(trial_data){
+            out_data.obj_names.push(this.obj_name)
+            out_data.images_picked.push(trial_data.image_picked)
+            out_data.rts.push(trial_data.rt)
         }
     }
 
@@ -56,17 +60,30 @@
       obj_num: 0,
       loop_function: function(){
 	      iterate_objs.obj_num = iterate_objs.obj_num + 1
-//     	      console.log(out_data)
 	      if (iterate_objs.obj_num === obj_names.length){
 	          return false
 	      }
 	      else {return true}
-      }
+        }
     }
 
+    let write_data = {
+        type:"call-function",
+        func: function(){
+            let name = "subj_" + String(sub_num)
+            let data = prep_data(out_data)
+            save_data(name, data)
+            console.log(out_data)
+        }
+    }
 
+    let end_instructions = {
+        type: "instructions",
+        pages: ["That's all! Thank you for your time."],
+        show_clickable_nav: false
+    }
 
-    timeline = [iterate_objs]
+    timeline = [iterate_objs, write_data, end_instructions]
     jsPsych.init({
         timeline: timeline,
         show_preload_progress_bar: true,
