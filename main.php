@@ -28,7 +28,7 @@
 <script>
 	let obj_names = <?php echo json_encode($dirs, JSON_HEX_TAG); ?>;
 	let images = <?php echo json_encode($images, JSON_HEX_TAG); ?>;
-	obj_names = shuffle(obj_names)
+// 	obj_names = shuffle(obj_names)
     let sub_num = Date.now()
     let out_data = {obj_names: [], images_picked: [], rts:[]}
 
