@@ -29,7 +29,7 @@
 <script>
 	let obj_names = <?php echo json_encode($dirs, JSON_HEX_TAG); ?>;
 	let images = <?php echo json_encode($images, JSON_HEX_TAG); ?>;
-// 	obj_names = shuffle(obj_names)
+	obj_names = shuffle(obj_names)
     let sub_num = Date.now()
     let out_data = {obj_names: [], images_picked: [], rts:[], eng_first: [], eng_learned: [], subnum: []}
     lang_survey_dat = null
@@ -47,6 +47,7 @@
             for (i in obj_images){
                 obj_images[i] = "images/"+this.obj_name+"/"+obj_images[i]
             }
+            obj_images = shuffle(obj_images)
             this.stimuli = listToMatrix(obj_images, 2)
             console.log(this.stimuli)
         },
