@@ -8,6 +8,7 @@
     <script src="jspsych-6.0.1/plugins/jspsych-vsl-grid-scene.js"></script>
     <script src="helper_functions.js"></script>
     <script src="jspsych-6.0.1/plugins/jspsych-serial-reaction-time-mouse.js"></script>
+    <script src="jspsych-6.0.1/plugins/jspsych-survey-html-form.js"></script>
     <link href="jspsych-6.0.1/css/jspsych.css" rel="stylesheet" type="text/css"></link>
 </head>
 <body>
@@ -30,7 +31,8 @@
 	let images = <?php echo json_encode($images, JSON_HEX_TAG); ?>;
 // 	obj_names = shuffle(obj_names)
     let sub_num = Date.now()
-    let out_data = {obj_names: [], images_picked: [], rts:[]}
+    let out_data = {obj_names: [], images_picked: [], rts:[], eng_first: [], eng_learned: [], subnum: []}
+    lang_survey_dat = null
 
     var pickbest = {
         type: 'clk-pick-best',
@@ -52,6 +54,9 @@
             out_data.obj_names.push(this.obj_name)
             out_data.images_picked.push(trial_data.image_picked)
             out_data.rts.push(trial_data.rt)
+            out_data.eng_first.push(lang_survey_dat.yesno)
+            out_data.eng_learned.push(lang_survey_dat.textbox)
+            out_data.subnum.push(sub_num)
         }
     }
 
@@ -83,7 +88,16 @@
         show_clickable_nav: false
     }
 
-    timeline = [iterate_objs, write_data, end_instructions]
+    let language_survey = {
+        type: "survey-html-form",
+        html: '<p> Is English your <b>first language</b>? <select name="yesno" id="yesno"> <option value="Yes"> Yes</option><option value="No"> No</option></select></p>'
+        + '<p> In which country did you learn English? <input name="textbox" type="text" /></p>',
+        on_finish: function(trial_data){
+            lang_survey_dat = JSON.parse(trial_data.responses)
+        }
+    }
+
+    timeline = [language_survey, iterate_objs, write_data, end_instructions]
     jsPsych.init({
         timeline: timeline,
         show_preload_progress_bar: true,
