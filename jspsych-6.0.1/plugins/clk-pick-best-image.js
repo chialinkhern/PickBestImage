@@ -46,13 +46,20 @@ jsPsych.plugins['clk-pick-best'] = (function() {
 
     function track_mouse_down(display_element){ // adapted from jspsych-serial-reaction-time-mouse
       var response_grid = display_element.querySelectorAll("#jspsych-vsl-grid-scene-table-cell")
+      document.getElementById("all_bad_button").addEventListener("mousedown", function(){
+        var resp_data = {}
+        resp_data.rt = Date.now() - startTime
+        resp_data.selected_stimulus = null
+        after_response(resp_data)
+      })
       // console.log(response_grid)
       for (var i=0; i<response_grid.length; i++){
         response_grid[i].addEventListener("mousedown", function(e){
           var resp_data = {}
-          resp_data.row = e.currentTarget.getAttribute("data-row")
-          resp_data.column = e.currentTarget.getAttribute("data-column")
+          var row = e.currentTarget.getAttribute("data-row")
+          var column = e.currentTarget.getAttribute("data-column")
           resp_data.rt = Date.now() - startTime
+          resp_data.selected_stimulus = trial.stimuli[row][column]
           after_response(resp_data)
         })
       }
@@ -69,7 +76,7 @@ jsPsych.plugins['clk-pick-best'] = (function() {
 
       var trial_data = {
         "rt": response.rt,
-        "image_picked": trial.stimuli[response.row][response.column],
+        "image_picked": response.selected_stimulus,
       }
 
       // clear the display
@@ -80,10 +87,13 @@ jsPsych.plugins['clk-pick-best'] = (function() {
     }
 
     if (trial.prompt !== null){
-      display_element.innerHTML = "\n"+trial.prompt
+      display_element.innerHTML = trial.prompt
+      display_element.innerHTML += "<p><input type='button' id='all_bad_button' value='These are all equally bad examples'></p>"
       display_element.innerHTML += plugin.generate_stimulus(trial.stimuli, trial.image_size);
       }
-    else {display_element.innerHTML = plugin.generate_stimulus(trial.stimuli, trial.image_size);
+    else {
+      display_element.innerHTML = "<p><input type='button' id='all_bad_button' value='These are all equally bad examples'></p>"
+      display_element.innerHTML += plugin.generate_stimulus(trial.stimuli, trial.image_size);
 }
 
     startTime = Date.now()
